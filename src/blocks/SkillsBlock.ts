@@ -11,18 +11,34 @@ export class SkillsBlock implements IBlock {
   /**
    * Рендеринг блоку навичок
    *
-   * TODO: Реалізуйте метод для відображення категорій навичок
+   * Реалізація методу для відображення категорій навичок
    * та їх списків у вигляді HTML елементів
    */
   render(): HTMLElement {
-    // Створюємо секцію
     const sec = document.createElement("section");
     sec.className = "section skills";
     sec.innerHTML = "<h2>Skills</h2>";
 
-    // TODO: Створіть список навичок, згрупований за категоріями
-    // Використайте Object.entries(this.d) для ітерації по всіх категоріях
-    // Створіть для кожної категорії елемент списку з назвою категорії та списком навичок
+    for (const [category, skills] of Object.entries(this.d)) {
+      if (Array.isArray(skills) && skills.length > 0) {
+        const categoryDiv = document.createElement("div");
+        categoryDiv.innerHTML = `
+          <h3>${category.charAt(0).toUpperCase() + category.slice(1)}</h3>
+        `;
+
+        const skillsList = document.createElement("ul");
+        skillsList.className = "skills-list";
+
+        for (const skill of skills) {
+          const skillItem = document.createElement("li");
+          skillItem.textContent = skill;
+          skillsList.appendChild(skillItem);
+        }
+
+        categoryDiv.appendChild(skillsList);
+        sec.appendChild(categoryDiv);
+      }
+    }
 
     return sec;
   }

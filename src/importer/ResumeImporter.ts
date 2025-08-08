@@ -11,11 +11,49 @@ export class ResumeImporter extends AbstractImporter<ResumeModel> {
   /**
    * Перевіряє, чи відповідає JSON-об'єкт очікуваній структурі
    *
-   * TODO: Реалізуйте валідацію JSON-даних резюме.
-   * Перевірте наявність необхідних полів (header, summary, experience, education, skills)
+   * Реалізація валідації JSON-даних резюме.
+   * Перевірка наявності необхідних полів (header, summary, experience, education, skills)
    */
   protected validate(): void {
-    // TODO: Додайте перевірки на наявність обов'язкових полів та їх структуру. Неприпустимий формат JSON
+    if (!this.raw || typeof this.raw !== "object") {
+      throw new Error("Invalid JSON: data must be an object");
+    }
+
+    const data = this.raw as Record<string, unknown>;
+
+    const requiredFields = [
+      "header",
+      "summary",
+      "experience",
+      "education",
+      "skills",
+    ];
+
+    for (const field of requiredFields) {
+      if (!(field in data)) {
+        throw new Error(`Missing required field: ${field}`);
+      }
+    }
+
+    if (typeof data.header !== "object" || !data.header) {
+      throw new Error("Invalid header structure");
+    }
+
+    if (typeof data.summary !== "object" || !data.summary) {
+      throw new Error("Invalid summary structure");
+    }
+
+    if (!Array.isArray(data.experience)) {
+      throw new Error("Experience must be an array");
+    }
+
+    if (!Array.isArray(data.education)) {
+      throw new Error("Education must be an array");
+    }
+
+    if (typeof data.skills !== "object" || !data.skills) {
+      throw new Error("Invalid skills structure");
+    }
   }
 
   /**
@@ -29,13 +67,28 @@ export class ResumeImporter extends AbstractImporter<ResumeModel> {
   /**
    * Рендерить модель резюме у DOM
    *
-   * TODO: Реалізуйте рендеринг моделі у DOM-дерево
+   * Реалізація рендерингу моделі у DOM-дерево
    */
   protected render(model: ResumeModel): void {
     const root = document.getElementById("resume-content")!;
-    // TODO: Створіть фабрику і використайте її для створення і рендерингу блоків
+
+    root.innerHTML = "";
     const factory = new BlockFactory();
 
-    // TODO: Створіть і додайте у DOM кожен блок резюме
+    const blockTypes: Array<{
+      type: Parameters<typeof factory.createBlock>[0];
+    }> = [
+      { type: "header" },
+      { type: "summary" },
+      { type: "experience" },
+      { type: "education" },
+      { type: "skills" },
+    ];
+
+    for (const { type } of blockTypes) {
+      const block = factory.createBlock(type, model);
+      const element = block.render();
+      root.appendChild(element);
+    }
   }
 }
